@@ -47,14 +47,14 @@ function formatWidget(status: ObsidianStatus, ctx: ExtensionContext): string[] {
 	const label = chalk.hex("#7C3AED").bold("Obsidian") + " ";
 	const fileLine = ctx.ui.theme.fg("accent", active.name) + ctx.ui.theme.fg("muted", `${dirLabel} | ${tabCount} tabs`);
 
-	const parts = [label + fileLine];
+	let line = label + fileLine;
 
 	if (status.selection?.text) {
 		const charCount = status.selection.text.length;
-		parts.push(ctx.ui.theme.fg("muted", `  sel: ${charCount} chars in ${status.selection.sourcePath}`));
+		line += ctx.ui.theme.fg("muted", " | ") + chalk.hex("#7C3AED")("select") + ctx.ui.theme.fg("muted", `: ${charCount} chars in ${status.selection.sourcePath}`);
 	}
 
-	return parts;
+	return [line];
 }
 
 function formatContext(status: ObsidianStatus): string {

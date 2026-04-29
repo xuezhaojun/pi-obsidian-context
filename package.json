@@ -12,6 +12,9 @@
 		"build": "echo 'nothing to build'",
 		"check": "echo 'nothing to check'"
 	},
+	"dependencies": {
+		"chalk": "^5.4.0"
+	},
 	"peerDependencies": {
 		"@mariozechner/pi-coding-agent": "*"
 	}
