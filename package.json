@@ -1,0 +1,18 @@
+{
+	"name": "obsidian-context-for-pi",
+	"version": "0.1.0",
+	"description": "Pi extension that surfaces Obsidian vault context (active file and open tabs) as an editor widget and injects it as hidden LLM context",
+	"type": "module",
+	"keywords": ["pi-package"],
+	"pi": {
+		"extensions": ["./src/index.ts"]
+	},
+	"scripts": {
+		"clean": "echo 'nothing to clean'",
+		"build": "echo 'nothing to build'",
+		"check": "echo 'nothing to check'"
+	},
+	"peerDependencies": {
+		"@mariozechner/pi-coding-agent": "*"
+	}
+}
