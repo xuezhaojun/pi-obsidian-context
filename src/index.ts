@@ -3,11 +3,20 @@ import path from "node:path";
 import chalk from "chalk";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 
-const OBSIDIAN_VAULT = path.join(
-	process.env.HOME ?? "",
-	"Library/Mobile Documents/iCloud~md~obsidian/Documents/Zhao",
-);
-const STATUS_FILE = path.join(OBSIDIAN_VAULT, ".obsidian/context.json");
+function findVaultRoot(startDir: string): string | undefined {
+	let dir = path.resolve(startDir);
+	while (true) {
+		try {
+			if (fs.statSync(path.join(dir, ".obsidian")).isDirectory()) {
+				return dir;
+			}
+		} catch {}
+		const parent = path.dirname(dir);
+		if (parent === dir) break;
+		dir = parent;
+	}
+	return undefined;
+}
 
 interface ObsidianTab {
 	path: string;
@@ -29,7 +38,8 @@ interface ObsidianStatus {
 
 function readStatus(): ObsidianStatus | undefined {
 	try {
-		const raw = fs.readFileSync(STATUS_FILE, "utf-8");
+		if (!statusFile) return undefined;
+		const raw = fs.readFileSync(statusFile, "utf-8");
 		return JSON.parse(raw) as ObsidianStatus;
 	} catch {
 		return undefined;
@@ -81,6 +91,8 @@ function formatContext(status: ObsidianStatus): string {
 }
 
 export default function obsidianContextExtension(pi: ExtensionAPI): void {
+	let vaultRoot: string | undefined;
+	let statusFile: string | undefined;
 	let currentStatus: ObsidianStatus | undefined;
 	let watcher: fs.FSWatcher | null = null;
 	let latestCtx: ExtensionContext | undefined;
@@ -88,11 +100,11 @@ export default function obsidianContextExtension(pi: ExtensionAPI): void {
 
 	function updateWidget(): void {
 		if (!latestCtx?.hasUI) return;
-		if (currentStatus && currentStatus.tabs.length > 0) {
-			latestCtx.ui.setWidget("obsidian-tabs", formatWidget(currentStatus, latestCtx));
-		} else {
+		if (!statusFile || !currentStatus || currentStatus.tabs.length === 0) {
 			latestCtx.ui.setWidget("obsidian-tabs", undefined);
+			return;
 		}
+		latestCtx.ui.setWidget("obsidian-tabs", formatWidget(currentStatus, latestCtx));
 	}
 
 	function reload(): void {
@@ -103,8 +115,9 @@ export default function obsidianContextExtension(pi: ExtensionAPI): void {
 	function startWatching(): void {
 		stopWatching();
 
-		const dir = path.dirname(STATUS_FILE);
-		const basename = path.basename(STATUS_FILE);
+		if (!statusFile) return;
+		const dir = path.dirname(statusFile);
+		const basename = path.basename(statusFile);
 
 		try {
 			watcher = fs.watch(dir, (_eventType, filename) => {
@@ -134,6 +147,7 @@ export default function obsidianContextExtension(pi: ExtensionAPI): void {
 
 	// Inject Obsidian context as a hidden message before each agent turn
 	pi.on("before_agent_start", async () => {
+		if (!statusFile) return;
 		currentStatus = readStatus();
 		if (!currentStatus) return;
 
@@ -166,8 +180,10 @@ export default function obsidianContextExtension(pi: ExtensionAPI): void {
 
 	pi.on("session_start", async (_event, ctx) => {
 		latestCtx = ctx;
+		vaultRoot = findVaultRoot(process.cwd());
+		statusFile = vaultRoot ? path.join(vaultRoot, ".obsidian", "context.json") : undefined;
 		reload();
-		startWatching();
+		if (statusFile) startWatching();
 	});
 
 	pi.on("session_shutdown", async () => {
