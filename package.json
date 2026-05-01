@@ -3,7 +3,17 @@
 	"version": "0.1.0",
 	"description": "Pi extension that surfaces Obsidian vault context (active file and open tabs) as an editor widget and injects it as hidden LLM context",
 	"type": "module",
-	"keywords": ["pi-package"],
+	"license": "MIT",
+	"author": "xuezhaojun",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/xuezhaojun/pi-obsidian-context.git"
+	},
+	"keywords": ["pi-package", "obsidian", "pi-extension"],
+	"files": [
+		"src",
+		"LICENSE"
+	],
 	"pi": {
 		"extensions": ["./src/index.ts"]
 	},
