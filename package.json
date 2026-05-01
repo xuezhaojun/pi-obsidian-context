@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-context-for-pi",
+	"name": "pi-obsidian-context",
 	"version": "0.1.0",
 	"description": "Pi extension that surfaces Obsidian vault context (active file and open tabs) as an editor widget and injects it as hidden LLM context",
 	"type": "module",
